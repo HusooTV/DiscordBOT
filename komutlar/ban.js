@@ -1,43 +1,42 @@
 const Discord = require('discord.js');
+const client = new Discord.Client();
+
 exports.run = (client, message, args) => {
   if (!message.guild) {
   const ozelmesajuyari = new Discord.RichEmbed()
   .setColor(0xFF0000)
   .setTimestamp()
   .setAuthor(message.author.username, message.author.avatarURL)
-  .addField(':warning: Uyarı :warning:', '`Ban` adlı komutu özel mesajlarda kullanamazsın.')
-  return message.author.send(ozelmesajuyari); }
+  .addField(':warning: Uyarı :warning:', '`ban` adlı komutu özel mesajlarda kullanamazsın.')
+  return message.author.sendEmbed(ozelmesajuyari); }
   let guild = message.guild
   let reason = args.slice(1).join(' ');
   let user = message.mentions.users.first();
-  let modlog = guild.channels.find('name', 'mod-log');
-  if (!modlog) return message.reply('`mod-log` kanalı oluşturman lazım.');
-  if (reason.length < 1) return message.reply('Sunucudan atma sebebini yaz.');
-  if (message.mentions.users.size < 1) return message.reply('Kimi atıcağımı yazmadın.').catch(console.error);
-  
-  let member = message.guild.member(user)
-  if (member.hasPermission("MANAGE_MESSAGES")) return message.channel.send(`<:no:663378512417128449> Kendi yetkimin üstündeki kişileri yasaklayamam.`)
-  message.guild.member(user).ban();
+  if (reason.length < 1) return message.reply('Ban sebebini yazmalısın.');
+  if (message.mentions.users.size < 1) return message.reply('Kimi banlayacağını yazmalısın.').catch(console.error);
+
+  if (!message.guild.member(user).bannable) return message.reply('Yetkilileri banlayamam.');
+  message.guild.ban(user, 2);
 
   const embed = new Discord.RichEmbed()
     .setColor(0x00AE86)
     .setTimestamp()
-    .addField('Eylem:', 'Sunucudan Banlama')
-    .addField('Kullanıcı:', `${user.username}#${user.discriminator} (${user.id})`)
-    .addField('Yetkili:', `${message.author.username}#${message.author.discriminator}`)
-    .addField('Sebep', reason);
-  return guild.channels.get(modlog.id).send(embed);
+    .addField('Eylem:', 'Sunucudan Yasaklama :bangbang: ')
+    .addField('Yasaklanan Kullanıcı:', `${user.username}#${user.discriminator} (${user.id})`)
+    .addField('Yasaklayan Yetkili:', `${message.author.username}#${message.author.discriminator}`)
+    .addField('Yasaklama Sebebi:', reason);
+  return message.channel.sendEmbed(embed);
 };
 
 exports.conf = {
   enabled: true,
   guildOnly: true,
-  aliases: ['at'],
+  aliases: [],
   permLevel: 2
 };
 
 exports.help = {
   name: 'ban',
-  description: 'İstediğiniz kişiyi sunucudan atar.',
+  description: 'İstediğiniz kişiyi sunucudan yasaklar.',
   usage: 'ban [kullanıcı] [sebep]'
 };
